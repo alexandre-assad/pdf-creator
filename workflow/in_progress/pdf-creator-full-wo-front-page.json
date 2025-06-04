@@ -1,0 +1,432 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd23694d-3f39-4673-a7a7-345091823910",
+              "name": "html_base64",
+              "value": "={{ $json.html.base64Encode() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2140,
+        0
+      ],
+      "id": "29634ca3-ecd3-4338-9d17-b36f63c93652",
+      "name": "Encode HTML"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "html_base64",
+        "options": {
+          "fileName": "index.html",
+          "mimeType": "text/html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2360,
+        0
+      ],
+      "id": "eea2d5c2-4471-4d0c-809f-74460dd52e8e",
+      "name": "Create index.html"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://gotenberg.pdf-creator.orb.local:3000/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2580,
+        0
+      ],
+      "id": "5abf9e56-28ae-4a1b-b713-dad0f4be9cf9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "$input.item.binary.data.fileName = 'result.pdf'\n \nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        0
+      ],
+      "id": "0e55eb14-b012-4abf-9ee7-4fdb0f48a491",
+      "name": "Code"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        0
+      ],
+      "id": "27949cd1-d840-46b8-aa2b-bb5b3dfeea2c",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.markdown }}",
+        "options": {
+          "systemMessage": "You're a Senior Front-End Developer. You're about to receive a chunk of a Markdown content from a professional press release.\nYour mission: transform it into a HTML section block.\nYou will only return the html code (between <section></section>). After that, i'll agreggate your section with other, add the header and style and have a professional page. \nI'll give you the css of the page and the markdown to convert. You will not :\n- Translate, modify or fix the markdown.\nYou will :\n- Return only the generated html in between section block\nHere is the html :\n```\n@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+Pro&display=swap');\n    \n        * {\n          box-sizing: border-box;\n        }\n    \n        body {\n          margin: 0 auto;\n          padding: 3cm 2.5cm;\n          width: 21cm;\n          height: auto;\n          background-color: #f9f7f3;\n          color: #2e2e2e;\n          font-family: 'Source Sans Pro', sans-serif;\n          line-height: 1.6;\n          font-size: 12pt;\n        }\n    \n        h1, h2, h3, h4 {\n          font-family: 'Playfair Display', serif;\n          color: #2e2e2e;\n          margin-top: 2em;\n          margin-bottom: 0.5em;\n        }\n    \n        h1 {\n          font-size: 28pt;\n          border-bottom: 2px solid #b38e5d;\n          padding-bottom: 0.2em;\n        }\n    \n        h2 {\n          font-size: 20pt;\n          border-left: 4px solid #b38e5d;\n          padding-left: 0.5em;\n        }\n    \n        h3 {\n          font-size: 16pt;\n          color: #b38e5d;\n        }\n    \n        h4 {\n          font-size: 13pt;\n          font-weight: bold;\n        }\n    \n        p {\n          margin-bottom: 1em;\n        }\n    \n        blockquote {\n          background-color: #f2f0eb;\n          border-left: 5px solid #b38e5d;\n          margin: 2em 0;\n          padding: 1em 1.5em;\n          font-style: italic;\n        }\n    \n        hr {\n          border: none;\n          border-top: 1px solid #b38e5d;\n          margin: 3em 0;\n        }\n    \n        section {\n          margin-bottom: 2.5em;\n        }\n    \n        strong {\n          color: #b38e5d;\n        }\n    \n        .contraste {\n          background-color: #ffffff;\n          padding: 2em;\n          margin: 2em 0;\n          border: 1px solid #e0ddd8;\n        }\n    \n        .highlight {\n          background-color: #fff9f1;\n          padding: 0.5em;\n          border-left: 3px solid #b38e5d;\n        }\n```\nAnd here's the markdown :\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        920,
+        400
+      ],
+      "id": "9e5c0c04-1c73-4050-9f89-dcdfe35df816",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "html": "{{ $json.header }}\n{{ $json.body }}\n  </body>\n</html>"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        0
+      ],
+      "id": "52a150c6-6135-4c5d-b91f-2c31cb1a2f60",
+      "name": "Create Final HTML"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "css = \"\"\"\n    <!DOCTYPE html>\n    <html lang=\"fr\">\n    <head>\n      <meta charset=\"UTF-8\">\n      <title>Portrait de la Réformatrice</title>\n      <style>\n        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Sans+Pro&display=swap');\n    \n        * {\n          box-sizing: border-box;\n        }\n    \n        body {\n          margin: 0 auto;\n          padding: 3cm 2.5cm;\n          width: 21cm;\n          height: auto;\n          background-color: #f9f7f3;\n          color: #2e2e2e;\n          font-family: 'Source Sans Pro', sans-serif;\n          line-height: 1.6;\n          font-size: 12pt;\n        }\n    \n        h1, h2, h3, h4 {\n          font-family: 'Playfair Display', serif;\n          color: #2e2e2e;\n          margin-top: 2em;\n          margin-bottom: 0.5em;\n        }\n    \n        h1 {\n          font-size: 28pt;\n          border-bottom: 2px solid #b38e5d;\n          padding-bottom: 0.2em;\n        }\n    \n        h2 {\n          font-size: 20pt;\n          border-left: 4px solid #b38e5d;\n          padding-left: 0.5em;\n        }\n    \n        h3 {\n          font-size: 16pt;\n          color: #b38e5d;\n        }\n    \n        h4 {\n          font-size: 13pt;\n          font-weight: bold;\n        }\n    \n        p {\n          margin-bottom: 1em;\n        }\n    \n        blockquote {\n          background-color: #f2f0eb;\n          border-left: 5px solid #b38e5d;\n          margin: 2em 0;\n          padding: 1em 1.5em;\n          font-style: italic;\n        }\n    \n        hr {\n          border: none;\n          border-top: 1px solid #b38e5d;\n          margin: 3em 0;\n        }\n    \n        section {\n          margin-bottom: 2.5em;\n        }\n    \n        strong {\n          color: #b38e5d;\n        }\n    \n        .contraste {\n          background-color: #ffffff;\n          padding: 2em;\n          margin: 2em 0;\n          border: 1px solid #e0ddd8;\n        }\n    \n        .highlight {\n          background-color: #fff9f1;\n          padding: 0.5em;\n          border-left: 3px solid #b38e5d;\n        }\n      </style>\n    </head>\n    <body>\n      \"\"\"\n\nreturn {'header' : css}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        -140
+      ],
+      "id": "7fd9b8e9-cced-4025-986b-3bc7c619a033",
+      "name": "Page CSS"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "markdowns",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        600,
+        0
+      ],
+      "id": "db86b157-a770-4094-93e0-2550cb51229e",
+      "name": "Split each markdown"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        780,
+        240
+      ],
+      "id": "91f63fe5-be22-4bf8-8ef6-3de304675e37",
+      "name": "Generate each HTML section"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "output",
+              "renameField": true,
+              "outputFieldName": "html_generated"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        140
+      ],
+      "id": "6b1c878b-bd95-4fda-bb2c-5b1d2e36253c",
+      "name": "Aggregate HTML sections"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "from json import dumps\n\nmarkdown = \"\"\"\n# 1. La Réformatrice\n\nVous êtes une femme animée par une force intérieure exigeante, un idéal élevé, une volonté constante d'amélioration — pour vous-même comme pour le monde. Le Type 1 de l'ennéagramme, souvent appelé « la Réformatrice », est une personnalité profondément motivée par le sens de l’éthique, la rigueur morale et le désir d'agir justement. Votre boussole intérieure ne tolère que rarement les écarts, et vous ressentez une responsabilité aiguë face à ce qui doit être rectifié, optimisé, purifié.\n\nVotre sens du devoir et votre intégrité inspirent le respect. Vous êtes fiable, cohérente, assidue. Vous avez une capacité remarquable à maintenir le cap, à tenir vos engagements et à poursuivre un idéal, même quand le monde semble se déliter autour de vous. Dans vos interactions, votre honnêteté, votre attention au détail et votre respect des règles vous placent souvent en position de leadership moral, qu'on le reconnaisse ou non.\n\nVotre lucidité vous permet de percevoir les incohérences, les injustices ou les manquements, et de vous mettre au service de leur correction. Vous incarnez la rigueur sans excès, la discipline sans froideur — lorsqu'elle est vécue dans ses plus belles expressions. Vous pouvez être une force transformatrice puissante, une source d'équilibre pour autrui, et un moteur silencieux mais intransigeant de qualité.\n\nMais cette quête de justesse a son prix. Vous luttez parfois avec une voix intérieure critique, dure, impitoyable, qui juge et juge encore. Il peut vous être difficile d’accorder du repos, à vous comme aux autres, sans ce sentiment insidieux de devoir inachevé. Le perfectionnisme vous pousse parfois à l’épuisement, et l’impatience envers ce qui est \"mal fait\" peut brouiller vos relations.\n\nCe rapport a pour vocation de vous offrir une carte précise de votre territoire intérieur. En comprenant en profondeur les dynamiques de votre type, vous pourrez adoucir les angles, accueillir plus de souplesse sans trahir votre rigueur, et transformer votre exigence en sagesse incarnée.\n\n---\n\n# 2. Rappels sur l’Ennéagramme\n\nL’ennéagramme est un système de connaissance de soi d’une richesse remarquable, qui plonge ses racines à la fois dans des traditions spirituelles anciennes et dans des approches psychologiques modernes. On retrouve ses premières traces dans des courants mystiques soufis, mais sa forme actuelle a été affinée au XXe siècle grâce à l’apport de penseurs tels que Gurdjieff, Ichazo et Naranjo. Bien plus qu’un outil de typologie, il s’agit d’une cartographie des motivations inconscientes humaines.\n\nLe terme vient du grec « ennea » (neuf) et « gramma » (figure), en référence à une étoile à neuf branches représentant les neuf types de personnalités fondamentales. Chaque type se définit non pas par des comportements apparents, mais par un moteur profond : un désir fondamental qui cherche à s’accomplir et une peur fondamentale qu’il tente d’éviter.\n\nLes neuf types sont interreliés selon un schéma dynamique. Chaque type est influencé par deux types adjacents appelés « ailes », qui nuancent sa manière d’être. De plus, selon l’état émotionnel et psychologique, chaque type peut se déplacer vers un autre type en intégration (état de croissance) ou en désintégration (état de stress).\n\nAinsi, l’ennéagramme ne fige pas une personne dans une étiquette. Il révèle un chemin d’évolution, en identifiant les pièges de l’ego, les automatismes et les peurs récurrentes, tout autant que les qualités profondes à développer. Le but n’est pas de « changer de type », mais de s’élever vers une version plus libre, plus consciente de soi.\n\nEn découvrant que d’autres fonctionnent selon des moteurs différents du vôtre, l’ennéagramme vous apprend aussi la compassion. Là où vous voyez du laxisme, d’autres expriment leur besoin de liberté ; là où vous percevez une injustice, d’autres vivent une insécurité ou une confusion. Cette grille de lecture devient alors un outil puissant de compréhension mutuelle et de régulation émotionnelle.\n\nDans les pages qui suivent, vous plongerez au cœur des spécificités de votre type 1. Vous verrez que votre exigence peut devenir une offrande, que votre sens de la justice peut s’assouplir sans renoncer, et que l’intégrité, vécue sans rigidité, devient une source de grâce.## 3. Description détaillée du type\n\n### Ses motivations fondamentales et ses peurs\n\nEn tant que femme de type 1, votre moteur intérieur est la recherche constante de justesse, d’intégrité et d’exemplarité. Vous êtes mue par un désir profond d’être une personne bonne, fiable, cohérente et alignée avec vos principes. Votre volonté d’améliorer le monde, de le rendre plus éthique, plus ordonné, plus juste, n’est pas une posture : c’est une vocation. Vous n’agissez pas à moitié, et vous refusez les compromis avec ce que vous percevez comme injuste ou dégradant. Vous vous sentez responsable de faire ce qui est « bien », même quand c’est inconfortable.\n\nVotre peur fondamentale est de ne pas être à la hauteur, de manquer à votre devoir moral, ou pire : de devenir une mauvaise personne. L’idée de trahir vos valeurs vous est insupportable. Vous redoutez l’erreur, l’approximation, ou l’idée de vous relâcher — car cela pourrait signifier que vous avez échoué à faire ce qui est juste. Cette tension entre exigence et peur vous pousse à vouloir toujours mieux faire, mieux être, mieux comprendre.\n\n### Ses forces et ses faiblesses principales\n\nVotre rigueur et votre sens de la responsabilité sont remarquables. Vous êtes fiable, loyale, méthodique, engagée. Vous ne laissez rien au hasard quand il s’agit de valeurs ou de devoirs. Votre capacité à discerner ce qui est améliorable — dans un projet, une relation ou un fonctionnement — fait de vous une référence naturelle dans les groupes, une figure d’équilibre.\n\nMais cette exigence devient parfois un fardeau. Vous avez tendance à être trop dure avec vous-même, à vous juger sévèrement, voire à nourrir une insatisfaction chronique. Il peut vous arriver de projeter cette sévérité sur autrui : attendre d’eux le même niveau de rigueur ou de conscience morale, sans forcément exprimer cette attente de façon bienveillante.\n\n### Ses tendances comportementales dans différentes situations\n\n**Au travail**, vous êtes une professionnelle engagée, structurée, perfectionniste (dans le bon comme le moins bon sens du terme). Vous cherchez la qualité, l’éthique, et le respect des règles. Vous pouvez facilement devenir la garante du bon fonctionnement d’une équipe. Mais votre intolérance à l’incohérence ou à l’improvisation mal maîtrisée peut parfois créer des tensions.\n\n**Dans vos relations**, vous êtes fidèle, loyale, honnête. Vous investissez dans les liens, à condition qu’ils reposent sur le respect mutuel et une certaine élévation morale. Vous pouvez être perçue comme exigeante ou critique, surtout si vous avez du mal à exprimer vos frustrations autrement que par des reproches.\n\n**En période de stress**, vous avez tendance à vous durcir, à devenir plus rigide, plus autocritique. Vous vous enfermez dans une boucle mentale où vous ruminez les fautes (réelles ou imaginées), les imperfections, les injustices. Le relâchement devient suspect, et le contrôle reprend toute la place.\n\n### Son désir fondamental et sa peur fondamentale\n\nVotre **désir fondamental** est d’être bonne, vertueuse, intègre — en somme, de « mériter » le respect, l’amour ou la reconnaissance en incarnant une haute idée de la moralité.\n\nVotre **peur fondamentale** est d’être mauvaise, corrompue, imparfaite — ou simplement pas à la hauteur de vos propres critères.\n\nCette tension entre ces deux pôles structure l’essentiel de vos automatismes comportementaux, et c’est en les rendant conscients que vous pourrez réellement vous en libérer.\n\n---\n\n## 4. Vos ailes : 1w9 et 1w2\n\nLe type 1 se trouve entre les types 9 et 2 sur le cercle de l’Ennéagramme. En fonction de votre personnalité, vous pouvez présenter des caractéristiques de l’un ou l’autre de ces types. Ce sont vos **ailes**, qui colorent votre manière d’être une Réformatrice. On parle ainsi de type **1w9** (« une avec une aile neuf ») ou **1w2** (« une avec une aile deux »).\n\n### L’aile 9 : la Réformatrice paisible (1w9)\n\nSi vous avez une aile 9 dominante, votre tempérament moral reste fort, mais vous êtes plus calme, plus introvertie, plus orientée vers l’harmonie intérieure. Vous cherchez à améliorer le monde, mais sans confrontation directe. Vous avez besoin de temps, de solitude, d’espace pour structurer votre pensée et conserver votre paix intérieure. Vous êtes plus stoïque, plus diplomate, parfois plus effacée. Le risque : éviter les conflits à tout prix, quitte à réprimer votre colère ou à ne pas défendre vos idées jusqu’au bout.\n\n### L’aile 2 : la Réformatrice engagée (1w2)\n\nSi votre aile 2 est dominante, votre exigence morale se combine avec un fort désir d’aider, de servir et de soutenir les autres. Vous êtes plus extravertie, plus proactive, plus impliquée dans les relations humaines. Votre quête de perfection se vit au service des autres : vous voulez être utile, être appréciée, et améliorer concrètement le quotidien des gens autour de vous. Le risque : attendre de la reconnaissance en retour et tomber dans un certain sacrifice émotionnel.\n\n### Trouver l’équilibre entre les deux ailes\n\nComprendre vos ailes, c’est affiner votre lecture de vous-même. En équilibrant les qualités du 9 (sérénité, paix, recul) avec celles du 2 (générosité, engagement, chaleur), vous pouvez enrichir votre posture de Réformatrice. L’important est de ne pas vous enfermer dans un seul registre : vos ailes sont là pour élargir votre palette d’expression, pas pour la restreindre.## 5. Intégration ou désintégration\n\nLe type 1 se transforme de manière significative selon son niveau d'intégration (bien-être) ou de désintégration (stress). Ces dynamiques internes influencent la façon dont vous exprimez vos qualités… ou vos excès.\n\n### En état d'intégration : vers le type 7\n\nLorsque vous êtes bien dans votre peau, confiante et équilibrée, vous manifestez les qualités élevées du type 7. Votre rigueur s’assouplit. Vous devenez plus légère, plus joyeuse, plus tolérante envers vous-même et envers les autres. Vous vous autorisez à respirer, à improviser, à apprécier les plaisirs simples sans les juger inutiles ou superficiels. Votre enthousiasme devient communicatif, et vous devenez une source d'inspiration positive : une femme qui agit avec conscience mais sans rigidité, animée par une énergie joyeuse et constructive.\n\nDans cet état, votre esprit critique se transforme en discernement, votre exigence en aspiration lucide, et votre autocensure en humour bienveillant. Vous restez guidée par vos principes, mais vous les vivez comme des choix intérieurs, et non comme des obligations oppressantes. Votre perfectionnisme se métamorphose en quête d’excellence, portée par une énergie vivante et ouverte.\n\n### En état de désintégration : vers le type 4\n\nLorsque la pression monte, que vous vous sentez impuissante ou que votre environnement vous semble injuste ou chaotique, vous pouvez glisser vers les travers du type 4. Votre rigueur devient alors amertume, votre frustration se teinte de mélancolie, et vous vous repliez dans une forme de ressentiment silencieux.\n\nVous pouvez vous sentir incomprise, isolée, blessée par le manque d’idéalisme ou de droiture du monde qui vous entoure. Des pensées comme « à quoi bon ? », « je suis seule à voir ce qui est juste » peuvent émerger. Vous vous focalisez sur ce qui ne va pas, et sur votre propre inadéquation, jusqu’à parfois vous dévaloriser ou perdre confiance dans vos capacités à réparer ou transformer les choses.\n\n### Trouver un point d’équilibre\n\nIdentifier ces dynamiques vous donne une clé essentielle : celle de sortir de l’automatisme. Observer quand vous commencez à vous durcir, ou au contraire quand vous respirez enfin, vous permet de reprendre la main. Rappelez-vous que votre rigueur est un outil, pas une prison. Que votre quête d'intégrité peut être vécue avec douceur et non dans l'urgence. L’objectif n’est pas de changer qui vous êtes, mais de vous permettre d’habiter pleinement vos qualités, sans tomber dans leurs excès.\n\n---\n\n## 6. Vos défis\n\nEn tant que femme de type 1, vos défis se situent souvent à l’endroit même de vos vertus. Là où vous êtes forte, vous pouvez devenir rigide. Là où vous êtes juste, vous pouvez devenir intransigeante. Identifier les pièges liés à vos exigences est un premier pas vers plus de sérénité. Voici trois grands contextes où ces difficultés peuvent apparaître, accompagnés de pistes pour les traverser avec conscience.\n\n### 6.1 Relations\n\nDans vos relations, vous aspirez à des liens authentiques, respectueux, solides. Vous aimez que les choses soient claires, cohérentes et justes. Mais cette recherche de droiture peut parfois vous rendre critique, impatiente ou exigeante — surtout si les autres n’ont pas vos repères moraux ou votre souci du détail. Vous pouvez aussi avoir du mal à exprimer votre affection sans filtre de contrôle : « je t’aime » devient souvent « je t’aime… mais tu pourrais faire mieux ».\n\n**Conseil :** Essayez de remplacer la correction par l’encouragement. Lorsque vous ressentez une irritation face à une imperfection, demandez-vous d’abord : « Est-ce que je peux laisser passer ça ? Est-ce que c’est grave ou simplement différent ? ». Lâcher le besoin de corriger, même pour cinq secondes, est déjà un acte d’amour. Rappelez-vous que votre valeur relationnelle ne réside pas dans votre exigence, mais dans votre présence bienveillante.\n\n### 6.2 Travail\n\nAu travail, vous êtes une collaboratrice rigoureuse, engagée, fiable. Vous vous imposez des standards élevés, et vous attendez la même chose des autres. Vous pouvez prendre beaucoup sur vos épaules pour « faire comme il faut », parfois au détriment de votre équilibre. Vous risquez de vous enfermer dans un perfectionnisme qui freine votre créativité ou votre capacité à déléguer.\n\n**Conseil :** Acceptez que « bien » peut parfois suffire. Créez des marges d’erreur assumées : fixez-vous des délais réalistes, des critères de qualité souples, et introduisez consciemment de l’imperfection dans votre processus (par exemple, envoyer une ébauche non parfaite). Cela renforce votre efficacité tout en vous allégeant mentalement.\n\n### 6.3 Stress\n\nSous stress, votre système de contrôle interne s’emballe. Vous vous jugez plus durement, vous ressentez de l’agacement envers les autres, et vous avez du mal à relâcher la pression. Vous pouvez devenir rigide, cassante, voire colérique — mais souvent de manière contenue, passive, ou intériorisée.\n\n**Conseil :** Le corps est votre allié. Dans les moments de tension, pratiquez une respiration profonde pendant deux minutes, ou marchez lentement en silence. Vous reconnecter à votre corps vous aide à sortir de la boucle mentale autocritique. Et chaque fois que vous prenez soin de vous sans « devoir le mériter », vous affaiblissez la croyance que l’effort est une condition de votre valeur.## 7. Potentiel de développement\n\nVotre quête de perfection et de justesse est une force puissante, mais aussi un défi constant. Pour évoluer, il est essentiel d’apprendre à apaiser cette exigence intérieure tout en conservant votre intégrité. Le premier axe de travail consiste à cultiver la bienveillance envers vous-même. Vous avez tendance à vous juger durement dès la moindre erreur, ce qui peut miner votre énergie et votre confiance. Rappelez-vous que l’erreur est humaine, un outil d’apprentissage, pas une condamnation. Exercez-vous à vous parler comme vous parleriez à une amie chère : avec douceur, encouragement et compréhension.\n\nDeuxièmement, travailler votre capacité à lâcher prise est crucial. Vous savez qu’il y a un « bon » et un « mauvais », et cette polarité vous pousse à contrôler ce qui vous entoure. Pourtant, accepter l’imperfection, dans les choses et dans les personnes, est un levier immense pour votre sérénité. Commencez par identifier un domaine où vous pouvez consciemment relâcher la pression — peut-être une tâche professionnelle ou un détail relationnel — et autorisez-vous à ne pas tout maîtriser. Ce petit exercice vous aidera à déverrouiller l’énergie bloquée par la peur du « mal fait ».\n\nTroisièmement, la connaissance de votre type et celle des autres types d’ennéagramme peut transformer vos relations. Comprendre que chacun agit selon ses propres peurs et motivations vous permet de relativiser vos jugements, d’accueillir la différence sans la combattre. Cette ouverture favorise la collaboration et apaise les tensions, surtout dans les environnements où vous devez faire preuve d’exigence.\n\nPour ancrer ces apprentissages dans votre quotidien, voici quelques exercices pratiques :\n\n- **Journal de la bienveillance :** chaque soir, notez trois réussites du jour, même petites, et trois choses que vous vous êtes dites avec gentillesse. Ce simple rituel déconditionne le regard critique.\n- **Pause respiration consciente :** quand vous sentez la pression monter, faites une pause de deux minutes pour respirer lentement et profondément. Cela reconnecte à votre corps et calme le mental exigeant.\n- **Exercice de lâcher prise progressif :** choisissez une situation où vous contrôlez trop. Laissez délibérément un peu d’espace à l’incertitude, puis observez ce qui se passe sans intervenir.\n\nEn intégrant ces pratiques, vous développez une version plus fluide et apaisée de votre type 1, capable de maintenir ses idéaux sans être prisonnière de l’exigence. Vous apprenez à conjuguer rigueur et souplesse, justice et compassion. Ce chemin de développement n’est pas un reniement, mais une évolution consciente vers une version plus complète et heureuse de vous-même.## 8. Conclusion\n\nVous êtes une femme de type 1, porteuse d’une force intérieure exceptionnelle, forgée par votre engagement profond envers l’intégrité, la justice et l’amélioration constante. Votre sens aigu de la responsabilité vous pousse à vouloir faire le bien autour de vous et à vivre selon des principes élevés, ce qui fait de vous une personne fiable, rigoureuse et inspirante. Cette quête d’excellence, bien qu’exigeante, est aussi la source de votre capacité à agir avec clarté et discernement dans des situations complexes.\n\nToutefois, il est important de reconnaître que ce même souci de perfection peut parfois vous enfermer dans une forme d’auto-critique sévère et de frustration, notamment face aux imperfections humaines, les vôtres comme celles des autres. Ce rapport vous a accompagné dans la compréhension de ces dynamiques, mettant en lumière vos forces et les défis spécifiques à votre profil. Vous avez exploré comment vos motivations, vos peurs fondamentales, et les nuances apportées par vos ailes façonnent votre façon d’être au quotidien.\n\nSurtout, vous avez découvert des pistes concrètes pour grandir : apprendre à vous offrir la même compassion que celle que vous prodiguez aux autres, relâcher la pression liée à l’exigence, et développer une plus grande ouverture dans vos relations. Ces clés vous permettront de vous libérer des chaînes de la perfection rigide et d’incarner pleinement une version plus apaisée, confiante et épanouie de vous-même.\n\nVotre engagement à progresser ne sera jamais vain, car il est aligné avec votre désir profond d’authenticité et de justice. Vous avez en main des outils pratiques pour avancer, des exercices à mettre en œuvre dans votre vie quotidienne afin d’équilibrer exigence et bienveillance, rigueur et souplesse.\n\nN’hésitez pas à partager vos retours, vos expériences ou vos questions. Votre cheminement est précieux et unique, et vos suggestions peuvent enrichir ce travail. Vous pouvez nous écrire à l’adresse suivante : [**9eclef@doolta.com**](mailto:9eclef@doolta.com). Votre voix compte, et ce dialogue sera une nouvelle étape dans votre évolution.\n\n---\n\n## 9. Annexe\n\n### 9.1 Bibliographie\n\n- Riso, D. R., & Hudson, R. (1996). *Personality Types: Using the Enneagram for Self-Discovery*. Houghton Mifflin.\n- Palmer, H. (1991). *The Enneagram: Understanding Yourself and the Others in Your Life*. HarperOne.\n- Naranjo, C. (1990). *Enneatypes: A New Approach to Understanding Yourself and Others*. Gateways Books & Tapes.\n\n### 9.2 Webographie\n\n- [The Enneagram Institute](https://www.enneagraminstitute.com) – Ressources complètes et tests officiels.\n- [9 Types](https://www.9types.com) – Articles détaillés sur chaque type, incluant des ressources pour approfondir.\n- [Enneagram Worldwide](https://www.enneagramworldwide.com) – Plateforme internationale dédiée à la formation et au développement personnel par l’ennéagramme.\n\n---\n\nCe travail a pour vocation de vous accompagner avec rigueur et bienveillance, à la hauteur de la femme exigeante et authentique que vous êtes. Continuez à avancer, toujours fidèle à vos valeurs, mais avec plus de douceur envers vous-même.\n\"\"\"\n\ndef split_markdown_into_batches(markdown_text, max_lines=60):\n    lines = markdown_text.splitlines()\n    batches = []\n    current_batch = []\n    current_line_count = 0\n\n    for i, line in enumerate(lines):\n        current_batch.append(line)\n        current_line_count += 1\n\n        next_line = lines[i+1] if i + 1 < len(lines) else None\n\n        # Condition to end batch:\n        if current_line_count >= max_lines or (next_line and next_line.startswith(\"#\") and current_line_count >= 40):\n            batches.append(\"\\n\".join(current_batch))\n            current_batch = []\n            current_line_count = 0\n\n    if current_batch:\n        batches.append(\"\\n\".join(current_batch))\n\n    return batches\n\nbatches = split_markdown_into_batches(markdown)\nreturn {'markdowns': [{\"index\": i, \"markdown\" : batch} for i, batch in enumerate(batches)]}\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        0
+      ],
+      "id": "a5b3c17d-3630-4d5c-b0b2-d86210d8aae0",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        940,
+        620
+      ],
+      "id": "a883a507-c80f-4573-a8ca-1793f23fb387",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ioRI4sgDfjiRvoPW",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        1320,
+        -60
+      ],
+      "id": "144a1c5c-aa80-447d-a770-f7df7ff5fbc0",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cleanedHtml = $json.html_generated\n  .map(h => {\n    return h\n      .replace(/^`{1,3}html[\\r\\n]+/i, '') \n      .replace(/`{1,3}$/, '')            `\n      .trim();                            \n  })\n  .join('\\n');\n\nreturn [{\n  json: {\n    header: $json.header,\n    body: cleanedHtml\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -60
+      ],
+      "id": "378c5bbd-fcce-4274-91ca-b4bfebf4d074",
+      "name": "Code2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Encode HTML": {
+      "main": [
+        [
+          {
+            "node": "Create index.html",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create index.html": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Generate each HTML section",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Final HTML": {
+      "main": [
+        [
+          {
+            "node": "Encode HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Page CSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split each markdown": {
+      "main": [
+        [
+          {
+            "node": "Generate each HTML section",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Page CSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate each HTML section": {
+      "main": [
+        [
+          {
+            "node": "Aggregate HTML sections",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate HTML sections": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Split each markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Create Final HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2e91f4e7-c426-4b8b-869f-964c0f676315",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3280c5db806d90562ef6425cc7565c1d3440d505e78b6d7aa735e6880cc6c7fc"
+  },
+  "id": "L10L2m1oJTBMZB0G",
+  "tags": []
+}
